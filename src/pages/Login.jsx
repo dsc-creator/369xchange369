@@ -47,11 +47,6 @@ export default function Login() {
     }
   }
 
-  const fillDemo = () => {
-    setEmail('demo@369xchange.com')
-    setPassword('demo1234')
-  }
-
   return (
     <div style={{
       minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -124,20 +119,6 @@ export default function Login() {
           <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
           <span style={{ color: 'var(--text-tertiary)', fontSize: 12, fontWeight: 500, textTransform: 'uppercase', letterSpacing: 1 }}>or</span>
           <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
-        </div>
-
-        {/* Demo hint */}
-        <div
-          onClick={fillDemo}
-          style={{
-            padding: '10px 14px', borderRadius: 'var(--radius-sm)',
-            background: 'rgba(0,212,255,0.08)', border: '1px dashed rgba(0,212,255,0.3)',
-            fontSize: 12, color: 'var(--accent-cyan)', marginBottom: 20,
-            cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
-          }}
-        >
-          <span>🎯</span>
-          <span><strong>Try demo:</strong> click here to autofill demo credentials</span>
         </div>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
