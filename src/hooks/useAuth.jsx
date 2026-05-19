@@ -1,4 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react'
+import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth'
+import { auth, googleProvider } from '../lib/firebase'
 
 const AuthContext = createContext(null)
 
@@ -35,6 +37,33 @@ export function AuthProvider({ children }) {
       return s ? JSON.parse(s) : null
     } catch { return null }
   })
+  const [firebaseUser, setFirebaseUser] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  // Listen to Firebase auth state changes
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
+      setFirebaseUser(fbUser)
+      if (fbUser && !user) {
+        // User signed in with Google, create/restore user profile
+        const googleUser = {
+          id: fbUser.uid,
+          email: fbUser.email,
+          name: fbUser.displayName || fbUser.email?.split('@')[0] || 'User',
+          photoURL: fbUser.photoURL,
+          kyc: 'pending',
+          createdAt: new Date().toISOString().split('T')[0],
+          portfolio: { USDT: { amount: 0, avgBuy: 1 } },
+          transactions: [],
+          isGoogleUser: true,
+        }
+        setUser(googleUser)
+        localStorage.setItem('369x_user', JSON.stringify(googleUser))
+      }
+      setLoading(false)
+    })
+    return () => unsubscribe()
+  }, [])
 
   const login = (email, password) => {
     const found = MOCK_USERS[email.toLowerCase()]
@@ -45,6 +74,42 @@ export function AuthProvider({ children }) {
     setUser(safe)
     localStorage.setItem('369x_user', JSON.stringify(safe))
     return safe
+  }
+
+  const loginWithGoogle = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider)
+      const fbUser = result.user
+      
+      // Check if this Google user exists in local storage
+      const existingData = localStorage.getItem('369x_google_' + fbUser.uid)
+      let userData
+      
+      if (existingData) {
+        userData = JSON.parse(existingData)
+        userData.photoURL = fbUser.photoURL // Update photo in case it changed
+      } else {
+        userData = {
+          id: fbUser.uid,
+          email: fbUser.email,
+          name: fbUser.displayName || fbUser.email?.split('@')[0] || 'User',
+          photoURL: fbUser.photoURL,
+          kyc: 'pending',
+          createdAt: new Date().toISOString().split('T')[0],
+          portfolio: { USDT: { amount: 0, avgBuy: 1 } },
+          transactions: [],
+          isGoogleUser: true,
+        }
+        localStorage.setItem('369x_google_' + fbUser.uid, JSON.stringify(userData))
+      }
+      
+      setUser(userData)
+      localStorage.setItem('369x_user', JSON.stringify(userData))
+      return userData
+    } catch (error) {
+      console.error('Google sign-in error:', error)
+      throw new Error(error.message || 'Failed to sign in with Google')
+    }
   }
 
   const signup = (email, password, name) => {
@@ -65,13 +130,22 @@ export function AuthProvider({ children }) {
     return newUser
   }
 
-  const logout = () => {
+  const logout = async () => {
+    // Sign out from Firebase if signed in with Google
+    if (firebaseUser) {
+      try {
+        await signOut(auth)
+      } catch (error) {
+        console.error('Firebase sign out error:', error)
+      }
+    }
     setUser(null)
+    setFirebaseUser(null)
     localStorage.removeItem('369x_user')
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout }}>
+    <AuthContext.Provider value={{ user, login, loginWithGoogle, signup, logout, loading }}>
       {children}
     </AuthContext.Provider>
   )
