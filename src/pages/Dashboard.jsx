@@ -55,10 +55,18 @@ export default function Dashboard() {
   return (
     <>
       <style>{`
+        .dashboard-wrapper {
+          margin-top: 68px;
+          min-height: calc(100vh - 68px);
+        }
         .dashboard-layout {
           display: flex;
           min-height: calc(100vh - 68px);
-          margin-top: 68px;
+        }
+        @media (max-width: 900px) {
+          .dashboard-layout {
+            flex-direction: column;
+          }
         }
         .dashboard-sidebar {
           width: 220px;
@@ -81,8 +89,10 @@ export default function Dashboard() {
             left: 0;
             top: 68px;
             bottom: 0;
+            width: 280px;
             height: auto;
             transform: translateX(-100%);
+            box-shadow: 4px 0 20px rgba(0,0,0,0.3);
           }
           .dashboard-sidebar.open {
             transform: translateX(0);
@@ -103,10 +113,11 @@ export default function Dashboard() {
         }
         .mobile-header {
           display: none;
-          padding: 16px 20px;
+          padding: 14px 20px;
           background: var(--bg-surface);
           border-bottom: 1px solid var(--border);
           align-items: center;
+          justify-content: space-between;
           gap: 12px;
         }
         @media (max-width: 900px) {
@@ -118,15 +129,18 @@ export default function Dashboard() {
           display: none;
           background: none;
           border: 1px solid var(--border);
-          padding: 8px 12px;
+          padding: 8px 14px;
           border-radius: var(--radius-sm);
           color: var(--text-primary);
           cursor: pointer;
           font-size: 14px;
+          font-weight: 500;
         }
         @media (max-width: 900px) {
           .menu-toggle {
-            display: block;
+            display: flex;
+            align-items: center;
+            gap: 8px;
           }
         }
         .dashboard-main {
@@ -134,9 +148,14 @@ export default function Dashboard() {
           padding: 32px 40px;
           overflow: auto;
         }
-        @media (max-width: 768px) {
+        @media (max-width: 900px) {
           .dashboard-main {
-            padding: 20px;
+            padding: 24px 20px;
+          }
+        }
+        @media (max-width: 480px) {
+          .dashboard-main {
+            padding: 20px 16px;
           }
         }
         .stats-grid {
@@ -153,6 +172,7 @@ export default function Dashboard() {
         @media (max-width: 480px) {
           .stats-grid {
             grid-template-columns: 1fr;
+            gap: 10px;
           }
         }
         .portfolio-grid {
@@ -178,6 +198,12 @@ export default function Dashboard() {
         @media (max-width: 768px) {
           .balance-card {
             padding: 24px 20px;
+            border-radius: var(--radius-md);
+          }
+        }
+        @media (max-width: 480px) {
+          .balance-card {
+            padding: 20px 16px;
           }
         }
         .balance-stats {
@@ -201,7 +227,7 @@ export default function Dashboard() {
         }
         @media (max-width: 480px) {
           .holdings-row {
-            padding: 12px 16px;
+            padding: 12px 14px;
             gap: 10px;
           }
         }
@@ -223,28 +249,58 @@ export default function Dashboard() {
         }
         @media (max-width: 480px) {
           .deposit-method {
+            padding: 14px 12px;
+            gap: 10px;
+          }
+          .deposit-method > div:last-of-type {
+            display: none;
+          }
+        }
+        .txn-row {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          padding: 16px 22px;
+        }
+        @media (max-width: 480px) {
+          .txn-row {
             padding: 14px 16px;
             gap: 12px;
           }
         }
+        .portfolio-card {
+          padding: 20px 22px;
+          background: rgba(255,255,255,0.025);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-md);
+          transition: border-color .2s;
+        }
+        @media (max-width: 480px) {
+          .portfolio-card {
+            padding: 16px;
+          }
+        }
       `}</style>
 
-      <div className="dashboard-layout">
+      <div className="dashboard-wrapper">
         {/* Mobile Header */}
         <div className="mobile-header">
           <button className="menu-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>
-            ☰ Menu
+            <span style={{ fontSize: 18 }}>☰</span>
+            Menu
           </button>
           <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
             {navItems.find(n => n.id === activeSection)?.label || 'Dashboard'}
           </span>
+          <div style={{ width: 70 }} /> {/* Spacer for centering */}
         </div>
 
-        {/* Sidebar Overlay */}
-        <div 
-          className={`sidebar-overlay ${sidebarOpen ? 'open' : ''}`} 
-          onClick={() => setSidebarOpen(false)}
-        />
+        <div className="dashboard-layout">
+          {/* Sidebar Overlay */}
+          <div 
+            className={`sidebar-overlay ${sidebarOpen ? 'open' : ''}`} 
+            onClick={() => setSidebarOpen(false)}
+          />
 
         {/* Sidebar */}
         <aside className={`dashboard-sidebar ${sidebarOpen ? 'open' : ''}`}>
@@ -517,6 +573,7 @@ export default function Dashboard() {
           )}
 
         </main>
+        </div>
       </div>
     </>
   )
