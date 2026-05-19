@@ -31,7 +31,7 @@ export default function Signup() {
   return (
     <div style={{
       minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: '40px 20px',
+      padding: '40px 16px',
       background: 'radial-gradient(ellipse at 50% 0%, rgba(0,229,160,0.06) 0%, transparent 60%)',
     }}>
       <div style={{
@@ -39,7 +39,7 @@ export default function Signup() {
         background: 'var(--bg-elevated)',
         border: '1px solid var(--border)',
         borderRadius: 'var(--radius-lg)',
-        padding: 40,
+        padding: 'clamp(24px, 5vw, 40px)',
         position: 'relative', overflow: 'hidden',
         animation: 'fadeUp .4s ease both',
       }}>
