@@ -13,6 +13,11 @@ export default function Navbar({ user, onLogout }) {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMenuOpen(false)
+  }, [location.pathname])
+
   const navLinks = [
     { label: 'Markets', href: '/#markets' },
     { label: 'Trade',   to: '/trade' },
@@ -21,107 +26,318 @@ export default function Navbar({ user, onLogout }) {
   ]
 
   return (
-    <nav style={{
-      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000,
-      height: 68,
-      background: scrolled ? 'rgba(7,11,20,0.92)' : 'transparent',
-      backdropFilter: scrolled ? 'blur(24px)' : 'none',
-      borderBottom: scrolled ? '1px solid var(--border)' : '1px solid transparent',
-      transition: 'all 0.35s ease',
-    }}>
-      <div style={{
-        maxWidth: 1240, margin: '0 auto', padding: '0 40px',
-        height: '100%', display: 'flex', alignItems: 'center', gap: 40,
-      }}>
-        {/* Logo */}
-        <Link to="/" style={{ textDecoration: 'none', flexShrink: 0 }}>
-          <div style={{
-            fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 22,
-            letterSpacing: '-0.5px',
-          }}>
-            <span style={{ color: 'var(--text-primary)' }}>369</span>
-            <span style={{
-              background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-green))',
-              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-            }}>x</span>
-            <span style={{ color: 'var(--text-primary)' }}>change</span>
+    <>
+      <style>{`
+        .nav-container {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          z-index: 1000;
+          height: 68px;
+          transition: all 0.35s ease;
+        }
+        .nav-container.scrolled {
+          background: rgba(7,11,20,0.92);
+          backdrop-filter: blur(24px);
+          border-bottom: 1px solid var(--border);
+        }
+        .nav-container:not(.scrolled) {
+          background: transparent;
+          backdrop-filter: none;
+          border-bottom: 1px solid transparent;
+        }
+        .nav-inner {
+          max-width: 1240px;
+          margin: 0 auto;
+          padding: 0 40px;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          gap: 40px;
+        }
+        @media (max-width: 768px) {
+          .nav-inner {
+            padding: 0 20px;
+            gap: 16px;
+          }
+        }
+        .nav-links-desktop {
+          display: flex;
+          gap: 4px;
+          flex: 1;
+        }
+        @media (max-width: 900px) {
+          .nav-links-desktop {
+            display: none;
+          }
+        }
+        .nav-right-desktop {
+          display: flex;
+          gap: 10px;
+          align-items: center;
+          flex-shrink: 0;
+        }
+        @media (max-width: 900px) {
+          .nav-right-desktop {
+            display: none;
+          }
+        }
+        .mobile-menu-btn {
+          display: none;
+          background: none;
+          border: none;
+          padding: 8px;
+          cursor: pointer;
+          margin-left: auto;
+        }
+        @media (max-width: 900px) {
+          .mobile-menu-btn {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+          }
+        }
+        .mobile-menu-btn span {
+          display: block;
+          width: 24px;
+          height: 2px;
+          background: var(--text-primary);
+          transition: all 0.3s ease;
+        }
+        .mobile-menu-btn.open span:nth-child(1) {
+          transform: translateY(7px) rotate(45deg);
+        }
+        .mobile-menu-btn.open span:nth-child(2) {
+          opacity: 0;
+        }
+        .mobile-menu-btn.open span:nth-child(3) {
+          transform: translateY(-7px) rotate(-45deg);
+        }
+        .mobile-menu {
+          display: none;
+          position: fixed;
+          top: 68px;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(7,11,20,0.98);
+          backdrop-filter: blur(24px);
+          padding: 24px 20px;
+          z-index: 999;
+          flex-direction: column;
+          gap: 8px;
+          overflow-y: auto;
+        }
+        @media (max-width: 900px) {
+          .mobile-menu.open {
+            display: flex;
+          }
+        }
+        .mobile-nav-link {
+          display: block;
+          padding: 14px 16px;
+          border-radius: var(--radius-sm);
+          font-size: 16px;
+          font-weight: 500;
+          color: var(--text-secondary);
+          text-decoration: none;
+          transition: all 0.2s;
+        }
+        .mobile-nav-link:hover, .mobile-nav-link.active {
+          color: var(--text-primary);
+          background: rgba(255,255,255,0.05);
+        }
+        .mobile-menu-divider {
+          height: 1px;
+          background: var(--border);
+          margin: 16px 0;
+        }
+        .mobile-auth-section {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          margin-top: auto;
+          padding-top: 20px;
+        }
+      `}</style>
+
+      <nav className={`nav-container ${scrolled ? 'scrolled' : ''}`}>
+        <div className="nav-inner">
+          {/* Logo */}
+          <Link to="/" style={{ textDecoration: 'none', flexShrink: 0 }}>
+            <div style={{
+              fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 22,
+              letterSpacing: '-0.5px',
+            }}>
+              <span style={{ color: 'var(--text-primary)' }}>369</span>
+              <span style={{
+                background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-green))',
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+              }}>x</span>
+              <span style={{ color: 'var(--text-primary)' }}>change</span>
+            </div>
+          </Link>
+
+          {/* Desktop Nav links */}
+          <div className="nav-links-desktop">
+            {navLinks.map(link => (
+              link.to
+                ? <Link key={link.label} to={link.to} style={{
+                    padding: '6px 14px', borderRadius: 8, fontSize: 14, fontWeight: 500,
+                    color: location.pathname === link.to ? 'var(--text-primary)' : 'var(--text-secondary)',
+                    textDecoration: 'none',
+                    background: location.pathname === link.to ? 'rgba(255,255,255,0.06)' : 'transparent',
+                    transition: 'all .2s',
+                  }}
+                  onMouseEnter={e => { e.target.style.color = 'var(--text-primary)'; e.target.style.background = 'rgba(255,255,255,0.05)' }}
+                  onMouseLeave={e => {
+                    e.target.style.color = location.pathname === link.to ? 'var(--text-primary)' : 'var(--text-secondary)'
+                    e.target.style.background = location.pathname === link.to ? 'rgba(255,255,255,0.06)' : 'transparent'
+                  }}
+                >{link.label}</Link>
+                : <a key={link.label} href={link.href} style={{
+                    padding: '6px 14px', borderRadius: 8, fontSize: 14, fontWeight: 500,
+                    color: 'var(--text-secondary)', textDecoration: 'none', transition: 'all .2s',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
+                  onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.background = 'transparent' }}
+                >{link.label}</a>
+            ))}
           </div>
-        </Link>
 
-        {/* Nav links */}
-        <div style={{ display: 'flex', gap: 4, flex: 1 }}>
-          {navLinks.map(link => (
-            link.to
-              ? <Link key={link.label} to={link.to} style={{
-                  padding: '6px 14px', borderRadius: 8, fontSize: 14, fontWeight: 500,
-                  color: location.pathname === link.to ? 'var(--text-primary)' : 'var(--text-secondary)',
-                  textDecoration: 'none',
-                  background: location.pathname === link.to ? 'rgba(255,255,255,0.06)' : 'transparent',
+          {/* Desktop Right side */}
+          <div className="nav-right-desktop">
+            {user ? (
+              <>
+                <Link to="/dashboard" style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '7px 16px', borderRadius: 'var(--radius-sm)',
+                  border: '1px solid var(--border)',
+                  background: 'rgba(255,255,255,0.04)',
+                  textDecoration: 'none', fontSize: 13, fontWeight: 600,
+                  color: 'var(--text-primary)',
                   transition: 'all .2s',
-                }}
-                onMouseEnter={e => { e.target.style.color = 'var(--text-primary)'; e.target.style.background = 'rgba(255,255,255,0.05)' }}
-                onMouseLeave={e => {
-                  e.target.style.color = location.pathname === link.to ? 'var(--text-primary)' : 'var(--text-secondary)'
-                  e.target.style.background = location.pathname === link.to ? 'rgba(255,255,255,0.06)' : 'transparent'
-                }}
-              >{link.label}</Link>
-              : <a key={link.label} href={link.href} style={{
-                  padding: '6px 14px', borderRadius: 8, fontSize: 14, fontWeight: 500,
-                  color: 'var(--text-secondary)', textDecoration: 'none', transition: 'all .2s',
-                }}
-                onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
-                onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.background = 'transparent' }}
-              >{link.label}</a>
-          ))}
-        </div>
+                }}>
+                  <div style={{
+                    width: 24, height: 24, borderRadius: '50%',
+                    background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-green))',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 11, fontWeight: 800, color: 'var(--bg-base)',
+                  }}>
+                    {user.email?.[0]?.toUpperCase() ?? 'U'}
+                  </div>
+                  Dashboard
+                </Link>
+                <button onClick={onLogout} style={{
+                  padding: '7px 16px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)',
+                  background: 'transparent', color: 'var(--text-secondary)', fontSize: 13, fontWeight: 500,
+                  cursor: 'pointer', transition: 'all .2s',
+                }}>Logout</button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" style={{
+                  padding: '7px 18px', borderRadius: 'var(--radius-sm)',
+                  border: '1px solid var(--border)', background: 'transparent',
+                  color: 'var(--text-secondary)', fontSize: 13, fontWeight: 600,
+                  textDecoration: 'none', transition: 'all .2s',
+                }}>Log In</Link>
+                <Link to="/signup" style={{
+                  padding: '8px 20px', borderRadius: 'var(--radius-sm)', border: 'none',
+                  background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-green))',
+                  color: 'var(--bg-base)', fontSize: 13, fontWeight: 700,
+                  textDecoration: 'none',
+                }}>Get Started</Link>
+              </>
+            )}
+          </div>
 
-        {/* Right side */}
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>
+          {/* Mobile Menu Button */}
+          <button 
+            className={`mobile-menu-btn ${menuOpen ? 'open' : ''}`}
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Toggle menu"
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+        </div>
+      </nav>
+
+      {/* Mobile Menu */}
+      <div className={`mobile-menu ${menuOpen ? 'open' : ''}`}>
+        {navLinks.map(link => (
+          link.to
+            ? <Link 
+                key={link.label} 
+                to={link.to} 
+                className={`mobile-nav-link ${location.pathname === link.to ? 'active' : ''}`}
+              >
+                {link.label}
+              </Link>
+            : <a 
+                key={link.label} 
+                href={link.href} 
+                className="mobile-nav-link"
+                onClick={() => setMenuOpen(false)}
+              >
+                {link.label}
+              </a>
+        ))}
+
+        <div className="mobile-menu-divider" />
+
+        <div className="mobile-auth-section">
           {user ? (
             <>
               <Link to="/dashboard" style={{
-                display: 'flex', alignItems: 'center', gap: 8,
-                padding: '7px 16px', borderRadius: 'var(--radius-sm)',
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '14px 16px', borderRadius: 'var(--radius-sm)',
                 border: '1px solid var(--border)',
                 background: 'rgba(255,255,255,0.04)',
-                textDecoration: 'none', fontSize: 13, fontWeight: 600,
+                textDecoration: 'none', fontSize: 15, fontWeight: 600,
                 color: 'var(--text-primary)',
-                transition: 'all .2s',
               }}>
                 <div style={{
-                  width: 24, height: 24, borderRadius: '50%',
+                  width: 32, height: 32, borderRadius: '50%',
                   background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-green))',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 11, fontWeight: 800, color: 'var(--bg-base)',
+                  fontSize: 14, fontWeight: 800, color: 'var(--bg-base)',
                 }}>
                   {user.email?.[0]?.toUpperCase() ?? 'U'}
                 </div>
                 Dashboard
               </Link>
-              <button onClick={onLogout} style={{
-                padding: '7px 16px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)',
-                background: 'transparent', color: 'var(--text-secondary)', fontSize: 13, fontWeight: 500,
-                cursor: 'pointer', transition: 'all .2s',
+              <button onClick={() => { onLogout(); setMenuOpen(false); }} style={{
+                padding: '14px 16px', borderRadius: 'var(--radius-sm)', 
+                border: '1px solid var(--border)',
+                background: 'transparent', color: 'var(--text-secondary)', 
+                fontSize: 15, fontWeight: 500,
+                cursor: 'pointer', width: '100%',
               }}>Logout</button>
             </>
           ) : (
             <>
               <Link to="/login" style={{
-                padding: '7px 18px', borderRadius: 'var(--radius-sm)',
+                display: 'block', textAlign: 'center',
+                padding: '14px 20px', borderRadius: 'var(--radius-sm)',
                 border: '1px solid var(--border)', background: 'transparent',
-                color: 'var(--text-secondary)', fontSize: 13, fontWeight: 600,
-                textDecoration: 'none', transition: 'all .2s',
+                color: 'var(--text-primary)', fontSize: 15, fontWeight: 600,
+                textDecoration: 'none',
               }}>Log In</Link>
               <Link to="/signup" style={{
-                padding: '8px 20px', borderRadius: 'var(--radius-sm)', border: 'none',
+                display: 'block', textAlign: 'center',
+                padding: '14px 20px', borderRadius: 'var(--radius-sm)', border: 'none',
                 background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-green))',
-                color: 'var(--bg-base)', fontSize: 13, fontWeight: 700,
+                color: 'var(--bg-base)', fontSize: 15, fontWeight: 700,
                 textDecoration: 'none',
               }}>Get Started</Link>
             </>
           )}
         </div>
       </div>
-    </nav>
+    </>
   )
 }

@@ -20,14 +20,11 @@ npm install
 npm run dev
 ```
 
-## Demo Login
+## Authentication
 
-Use these credentials on the `/login` page to explore the dashboard:
-
-- **Email:** `demo@369xchange.com`
-- **Password:** `demo1234`
-
-Or click the blue hint banner on the login page to autofill.
+Sign up or log in using:
+- **Google Sign-In** - Click "Continue with Google" for quick access
+- **Email/Password** - Create an account with your email
 
 ## Pages
 
